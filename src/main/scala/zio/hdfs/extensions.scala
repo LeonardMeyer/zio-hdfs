@@ -23,7 +23,7 @@ extension (sc: StringContext)
     new Path(buf.mkString)
 
 extension [R, E <: Throwable](stream: ZStream[R, E, Byte])
-  def sinkAsString(charset: Charset = StandardCharsets.UTF_8): ZIO[R, E, String] =
+  def asString(charset: Charset = StandardCharsets.UTF_8): ZIO[R, E, String] =
     stream.run(ZSink.collectAll[Byte].map(chunk => new String(chunk.toArray, charset)))
 
 given riToZStream[T]: Conversion[RemoteIterator[T], ZStream[Any, Throwable, T]] =

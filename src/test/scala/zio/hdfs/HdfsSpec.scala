@@ -16,7 +16,7 @@ import zio.stream.ZSink
 
 import java.nio.file.Paths
 
-object HdfsSpec extends ZIOSpec[TestEnvironment & Hdfs]:
+object HdfsSpec extends ZIOSpec[Hdfs]:
   override val bootstrap =
     val baseDir = new File(PathUtils.getTestDir(getClass()), "miniHDFS")
     val conf    = new Configuration()
@@ -29,33 +29,38 @@ object HdfsSpec extends ZIOSpec[TestEnvironment & Hdfs]:
       .format(true)
       .build()
       .waitClusterUp()
-    testEnvironment ++ HdfsLive.layer(conf)
+    HdfsLive.layer(conf)
 
-  private val data     = "whatever"
-  private val filePath = p"/tmp/file.txt"
+  private val data = "whatever"
   override def spec = suite("HdfsSpec")(
     test("write then read the same value") {
+      val filePath = p"/tmp/file.txt"
       for {
         _   <- Hdfs.write(filePath, data, true)
-        out <- Hdfs.read(filePath).sinkAsString()
+        out <- Hdfs.read(filePath).asString()
       } yield assertTrue(out == data)
     },
     test("verify if written file exists") {
+      val newFile = p"/tmp/exists.txt"
       for {
-        _      <- Hdfs.write(p"/tmp/exists.txt", data, true)
-        exists <- Hdfs.exists(filePath)
+        _      <- Hdfs.write(newFile, data, true)
+        exists <- Hdfs.exists(newFile)
       } yield assertTrue(exists)
     },
     test("copy file") {
-      val copyPath = p"/tmp/file_copy.txt"
+      val filePath = p"/tmp/file2.txt"
+      val copyPath = p"/tmp/file2_copy.txt"
       for {
-        bool   <- Hdfs.copy(filePath, copyPath, false)
+        _      <- Hdfs.write(filePath, data, true)
+        bool   <- Hdfs.copy(filePath, copyPath, true)
         exists <- Hdfs.exists(filePath)
       } yield assertTrue(bool && exists)
     },
     test("move file") {
-      val movePath = p"/tmp/file_move.txt"
+      val filePath = p"/tmp/file3.txt"
+      val movePath = p"/tmp/file_move3.txt"
       for {
+        _      <- Hdfs.write(filePath, data, true)
         bool   <- Hdfs.move(filePath, movePath, false)
         exists <- Hdfs.exists(filePath)
       } yield assertTrue(bool && !exists)

@@ -1,13 +1,13 @@
 inThisBuild(
   Seq(
     version            := "0.1.0-SNAPSHOT",
-    scalaVersion       := "3.1.3",
+    scalaVersion       := "3.3.0",
     crossScalaVersions := Seq(scalaVersion.value, "2.13.8")
   )
 )
 
-val zioVersion    = "2.0.0"
-val hadoopVersion = "3.3.3"
+val zioVersion    = "2.0.15"
+val hadoopVersion = "3.3.5"
 
 lazy val root = (project in file("."))
   .settings(
@@ -21,7 +21,5 @@ lazy val root = (project in file("."))
       "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % Test,
       // Minicluster does not provide Mockito because of test jar transitivy issue
       "org.mockito"       % "mockito-core"       % "2.28.2"      % Test
-
-    ),
-    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
+    )
   )

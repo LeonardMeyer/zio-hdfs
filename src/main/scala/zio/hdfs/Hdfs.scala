@@ -54,7 +54,7 @@ object Hdfs:
   def write[T: AsByteArray](destPath: Path, data: T, overwrite: Boolean = false): ZIO[Hdfs, IOException, Unit] =
     ZIO.serviceWithZIO[Hdfs](_.write(destPath, data, overwrite))
 
-  def mkdirs(path: Path, fsPermission: FsPermission = FsPermission.getDirDefault()): ZIO[Hdfs, IOException, Unit] =
+  def mkdirs(path: Path, fsPermission: FsPermission = FsPermission.getDirDefault): ZIO[Hdfs, IOException, Unit] =
     ZIO.serviceWithZIO[Hdfs](_.mkdirs(path, fsPermission))
 
   def read(path: Path): ZStream[Hdfs, IOException, Byte] =

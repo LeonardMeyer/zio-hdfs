@@ -36,7 +36,12 @@ case class HdfsLive private (fileSystem: FileSystem) extends Hdfs:
       ZIO.logDebug(s"Trying to write '$data' to '$destPath'...") *>
         ZIO
           .attempt(fs.create(destPath, overwrite))
-          .acquireReleaseWithAuto(dos => ZIO.attempt(dos.write(data.asByteArray)))
+          .acquireReleaseWithAuto(dos =>
+            ZIO.attempt {
+              dos.write(data.asByteArray)
+              dos.flush()
+            }
+          )
     }
 
   override def mkdirs(path: Path, fsPermission: FsPermission): IO[IOException, Unit] =
@@ -59,10 +64,9 @@ case class HdfsLive private (fileSystem: FileSystem) extends Hdfs:
 end HdfsLive
 
 object HdfsLive:
-  def layer(config: => Configuration): ZLayer[Scope, Throwable, Hdfs] = ZLayer.scoped {
+  def layer(config: => Configuration): ZLayer[Any, Throwable, HdfsLive] = ZLayer.scoped {
     for {
       fileSystem <- ZIO.fromAutoCloseable(ZIO.attempt(FileSystem.get(config)))
     } yield HdfsLive(fileSystem)
   }
 end HdfsLive
-
